@@ -17,7 +17,7 @@ The main feature are:
 
 ## How Do I Use It?
 
-The server is _intended_ to run on internal network where it cannot be accessed from the internet. As such it does only offer very basic security. In the users.yml, you can create additional users that are allowed to access the server
+The server is _intended_ to run on internal network where it cannot be accessed from the internet. As such it does only offer very basic security. In the users.yml, you can create additional users that are allowed to access the server. If no users.yml file is found, the server runs without authentication.
 
 ### Start Server From Code
 
