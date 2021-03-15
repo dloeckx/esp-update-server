@@ -34,9 +34,12 @@ users = {}
 
 @auth.verify_password
 def verify_password(username, password):
+    if not users:
+        return True
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
+    return False
 
 def log_event(msg):
     st = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
@@ -72,15 +75,15 @@ def load_users():
             try:
                 users = yaml.load(stream, Loader=yaml.FullLoader)
             except yaml.YAMLError as err:
-                flash(err)
+                print(err)
     except:
-        flash('Error: Users file not found.')
+        print('Warning: Users file not found, no authentication.')
     if users:
         for user in users: # generate hash from the plaintext password
             users[user] = generate_password_hash(users[user])
+        print(users)
     if not users:
         users = dict()
-    print(users)
     return users
 
 
