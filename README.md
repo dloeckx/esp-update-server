@@ -27,14 +27,21 @@ To run the server directly from code start it with the following command:
 python3 server.py
 ```
 
+### Build docker file yourself
+From the root-directory of this app, run: `docker build -t esp-update-server:latest . ` to re-build the docker-image from source
+To directly run this app, run
+```
+docker run -d --restart unless-stopped --name esp-update-server -v $PWD/bin:/esp-update-server/bin -p 5000:5000 esp-update-server:latest
+```
+
 ### Start Server From Docker?
 
 Ready-made Docker images are available on [Docker Hub](https://hub.docker.com/r/kstobbe/esp-update-server/) which support running on Linux on both AMD64 and ARM32V6 architectures - i.e. desktops, laptops, and Raspberry Pis.
 
-To run the server in a Docker container create a directory for storing binaries. Then run following command:
+To run the server in a Docker container create a directory `bin` for storing binaries. Then run following command from the directory where you have the `server.py`
 
 ```
-docker run -d -v $PWD/bin:/esp-update-server/bin -p 5000:5000 kstobbe/esp-update-server:latest
+docker run -d --restart unless-stopped --name esp-update-server -v $PWD/bin:/esp-update-server/bin -p 5000:5000 kstobbe/esp-update-server:latest
 ```
 
 Using the `-v` option ensures files are stored outside the Docker container and are thus persisted even if the container is terminated.

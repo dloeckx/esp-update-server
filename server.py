@@ -2,10 +2,12 @@ import os
 import re
 import time
 from datetime import datetime
+from collections import OrderedDict
 
 import yaml
 from flask import (Flask, flash, redirect, render_template, request,
                    send_from_directory, url_for)
+from flask_moment import Moment
 from packaging import version
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,6 +23,7 @@ __status__ = 'Production'
 
 ALLOWED_EXTENSIONS = set(['bin'])
 app = Flask(__name__)
+moment = Moment(app)
 app.config['UPLOAD_FOLDER'] = './bin'
 app.config['SECRET_KEY'] = 'Kri57i4n570bb33r3nF1ink3rFyr'
 PLATFORMS_YAML = app.config['UPLOAD_FOLDER'] + '/platforms.yml'
@@ -111,8 +114,10 @@ def load_known_mac_yaml():
         for known_mac in macs.values():
             if known_mac['first_seen']:
                 known_mac['first_seen'] = str(known_mac['first_seen'])
+                known_mac['first_seen_dt'] = datetime.strptime(known_mac['first_seen'], '%Y-%m-%d %H:%M:%S')
             if known_mac['last_seen']:
                 known_mac['last_seen'] = str(known_mac['last_seen'])
+                known_mac['last_seen_dt'] = datetime.strptime(known_mac['last_seen'], '%Y-%m-%d %H:%M:%S')
     if not macs:
         macs = dict()
     return macs
@@ -127,6 +132,13 @@ def save_known_mac_yaml(macs):
         flash('Error: Known MAC data not saved.')
     return False
 
+def detect_known_macs(known_macs, platforms):
+    for key, known_mac in known_macs.items():
+        for platform, platform_values in platforms.items():
+            if(platform_values['whitelist'] and key in platform_values['whitelist']):
+                # This mac is whitelisted, store the platform-name, so we can use that in the future
+                known_mac['platform'] = platform 
+    return known_macs
 
 @app.context_processor
 def utility_processor():
@@ -343,9 +355,9 @@ def whitelist():
                 flash('Error: Could not save file.')
         else:
             flash('Error: Unknown action.')
-
     if platforms:
-        return render_template('whitelist.html', platforms=platforms, known_macs = known_macs)
+        known_macs_with_platform =  detect_known_macs(known_macs, platforms)
+        return render_template('whitelist.html', platforms=platforms, known_macs = known_macs_with_platform)
     else:
         return render_template('status.html', platforms=platforms)
 
